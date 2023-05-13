@@ -1,0 +1,51 @@
+version: '3.9'
+services:
+  api:
+    build:
+      context: server
+      dockerfile: Dockerfile
+    volumes:
+      - ./server:/src/server
+      - ./server/node_modules:/src/server/node_modules
+    expose:
+      - "5000:5000"
+    networks:
+      soundCloud-network:
+  client:
+    build:
+      context: client
+      dockerfile: Dockerfile
+    volumes:
+      - ./client:/src/client
+      - ./client/node_modules:/src/client/node_modules
+    expose:
+      - "5173:5173"
+    networks:
+      soundCloud-network:
+  mongodb:
+    image: mongo:focal
+    container_name: soundCloud_mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo:/data/db
+    networks:
+      soundCloud-network:
+  redis:
+    image: redis:alpine
+    container_name: soundCLoud_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+      - redis-conf:/usr/local/etc/redis/redis.conf
+    networks:
+      soundCloud-network:
+volumes:
+  mongo:
+  redis-data:
+  redis-conf:
+networks:
+  soundCloud-network:
+    driver: bridge
+    internal: false
