@@ -1,8 +1,13 @@
-import {HydratedDocument} from "mongoose";
+import {HydratedDocument, ObjectId, Types} from "mongoose";
 import {Prop, SchemaFactory, Schema} from "@nestjs/mongoose";
 import {hashPassword, verifyPassword} from "../../utils";
 
-
+export enum UserAccountStatus  {
+    Active="Active",
+    DeActive="DeActive",
+    Lock="Lock",
+    Ban="Ban",
+}
 @Schema()
 class User {
     @Prop({isRequired: true, unique: true})
@@ -11,7 +16,20 @@ class User {
     username: string;
     @Prop({isRequired: true})
     password: string;
-
+    @Prop({type:[Types.ObjectId],ref:"playlist"})
+    playlists:Types.ObjectId[]
+    @Prop()
+    previousLoginIp?:string;
+    @Prop()
+    registerIp:string;
+    @Prop()
+    lastLogin:Date;
+    @Prop()
+    lastResetPassword:Date;
+    @Prop()
+    resetPasswordCount:Date;
+    @Prop({enum:UserAccountStatus,default:UserAccountStatus.DeActive})
+    accountStatus:UserAccountStatus
 }
 
 type UserDocument = HydratedDocument<User>;

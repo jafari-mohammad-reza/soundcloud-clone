@@ -16,35 +16,22 @@ services:
       MONGODB_URL: mongodb://mongo
       REDIS_URL: redis://redis
       NODE_ENV: development
-    networks:
-      soundCloud-network:
   mongo:
-    image: mongo:focal
-    container_name: soundCloud_mongo
+    image: mongo
     ports:
       - "27017:27017"
-    expose:
-      - 27017
     volumes:
       - mongo:/data/db
-    networks:
-      soundCloud-network:
+    container_name: mongo
   redis:
     image: redis:alpine
     container_name: soundCLoud_redis
     ports:
-      - "6380:6379"
+      - "6379:6379"
     volumes:
       - redis-data:/data
       - redis-conf:/usr/local/etc/redis/redis.conf
-    networks:
-      soundCloud-network:
 volumes:
   mongo:
   redis-data:
   redis-conf:
-networks:
-  soundCloud-network:
-    driver: bridge
-    internal: false
-    enable_ipv6: false
