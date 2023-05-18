@@ -1,13 +1,24 @@
-import { HttpService } from "@nestjs/axios";
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import {map} from "rxjs"
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { MailerService } from '@nestjs-modules/mailer';
+
 @Injectable()
 export class EmailService {
-    constructor(private readonly configService:ConfigService){
+  private readonly _loggger: Logger;
+  constructor(private readonly mailerService: MailerService) {
+    this._loggger = new Logger(EmailService.name);
+  }
 
+  async sendEmail(to: string, subject: string, content: any) {
+    try {
+      await this.mailerService.sendMail({
+        from: 'soundClone@gmail.com',
+        to,
+        subject,
+        html: `<body>${content}</body>`,
+      });
+    } catch (err) {
+      this._loggger.error('Failed to send email');
     }
-    sendEmail(target:string , title:string , content:string) {
-        
-    }
+  }
 }

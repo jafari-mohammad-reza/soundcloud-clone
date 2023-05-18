@@ -1,4 +1,3 @@
-import {UserSchema , UserDocument,UserModel} from "./user.schema"
-export {
-    UserDocument,UserSchema,UserModel
-}
+import { UserDocument, UserModel, UserSchema } from './user.schema';
+
+export { UserDocument, UserSchema, UserModel };

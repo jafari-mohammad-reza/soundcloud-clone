@@ -1,2 +1,3 @@
-import {HttpModule} from "@nestjs/axios"
-export const AxiosModuleConf =  HttpModule.register({})
+import { HttpModule } from '@nestjs/axios';
+
+export const AxiosModuleConf = HttpModule.register({});

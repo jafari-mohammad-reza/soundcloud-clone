@@ -1,8 +1,8 @@
-import {ThrottlerModule} from "@nestjs/throttler";
-import {redisStore} from "cache-manager-redis-store";
+import { ThrottlerModule } from '@nestjs/throttler';
+import { Redis } from 'ioredis';
 
 export const ThrottlerConf = ThrottlerModule.forRoot({
-    ttl: 120,
-    limit: 40,
-    storage: redisStore({url: process.env.REDIS_URL, ttl: 120})
-})
+  ttl: 120,
+  limit: 40,
+  storage: Redis,
+});
