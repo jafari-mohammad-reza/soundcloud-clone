@@ -2,19 +2,23 @@ version: '3.9'
 services:
   api:
     build:
-      context: server
+      context: .
       dockerfile: Dockerfile
+      target: development
     volumes:
-      - ./server:/src/server
-      - ./server/node_modules:/src/server/node_modules
+      - .:/app
+      - ./node_modules:/app/node_modules
     ports:
       - "5000:5000"
+      - "9229:9229"
     depends_on:
       - mongo
       - redis
     environment:
       MONGODB_URL: mongodb://mongo
       REDIS_URL: redis://redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       NODE_ENV: development
   mongo:
     image: mongo
