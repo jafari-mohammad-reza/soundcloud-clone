@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { RedisModuleOptions, RedisOptionsFactory } from '@liaoliaots/nestjs-redis';
+import {RedisModule, RedisModuleOptions, RedisOptionsFactory} from '@liaoliaots/nestjs-redis';
+import {ConfigModule, ConfigService} from "@nestjs/config";
 
-@Injectable()
-export class RedisConfigService implements RedisOptionsFactory {
-    createRedisOptions(): RedisModuleOptions {
-        return {
-            readyLog: true,
-            config: {
-                url: process.env.REDIS_URL
-            }
-        };
-    }
-}
+export const RedisModuleConf =  RedisModule.forRootAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (config: ConfigService) => ({
+        config: {
+            url: config.getOrThrow('REDIS_URL'),
+        },
+        readyLog: true,
+        closeClient:true,
+    }),
+});
+

@@ -5,16 +5,23 @@ import {MongooseModule} from '@nestjs/mongoose';
 import {UserModel, UserSchema} from 'src/share/database';
 import {JwtModuleService} from 'src/share/services/jwt.service';
 import {EmailService} from 'src/share/services/email.service';
-import {MailerConf} from '../../share/conf/mailer.conf';
-import {JwtConf} from "src/share/conf"
+import {JwtConf, RedisModuleConf,MailerConf} from "src/share/conf"
+import {AuthQueue} from "./auth.queue";
+import {RedisModule} from "@liaoliaots/nestjs-redis";
+import {ConfigModule, ConfigService} from "@nestjs/config";
+import {BullModule} from "@nestjs/bull";
+import {AuthQueueName} from "../../share/constants/queueus";
 @Module({
     imports: [
         MongooseModule.forFeature([{name: UserModel.name, schema: UserSchema}]),
-        JwtConf,
         MailerConf,
+        JwtConf,
+        BullModule.registerQueue({
+            name : AuthQueueName,
+        })
     ],
     controllers: [AuthController],
-    providers: [AuthService, JwtModuleService, EmailService],
+    providers: [AuthService, JwtModuleService, EmailService , AuthQueue],
 })
 export class AuthModule {
 }

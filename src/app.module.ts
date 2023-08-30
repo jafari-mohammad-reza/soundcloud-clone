@@ -1,9 +1,16 @@
 import {Module} from '@nestjs/common';
-import {ConfigModuleConf, EventEmmiterConf, JwtConf, MongooseConf, ThrottlerConf} from './share/conf';
+import {
+    ConfigModuleConf,
+    EventEmmiterConf,
+    JwtConf,
+    MongooseConf,
+    RedisModuleConf,
+    ThrottlerConf,
+    BullConf
+} from './share/conf';
 import {AuthModule} from './modules/auth/auth.module';
-import {BullConf} from "./share/conf/bull.conf";
-import {RedisConfigService} from "./share/conf/redis.conf";
 import {RedisModule} from "@liaoliaots/nestjs-redis";
+import {ConfigModule, ConfigService} from "@nestjs/config";
 
 @Module({
     imports: [
@@ -13,7 +20,15 @@ import {RedisModule} from "@liaoliaots/nestjs-redis";
         EventEmmiterConf,
         ConfigModuleConf,
         RedisModule.forRootAsync({
-            useClass: RedisConfigService
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                config: {
+                    url: config.getOrThrow('REDIS_URL'),
+                },
+                readyLog: true,
+                closeClient:true,
+            }),
         }),
         BullConf,
         AuthModule,

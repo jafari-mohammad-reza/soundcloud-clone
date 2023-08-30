@@ -12,15 +12,19 @@ import {EmailService} from 'src/share/services/email.service';
 import {generateUUID} from '../../share/utils/crypto';
 import { DEFAULT_REDIS_NAMESPACE, InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
+import {InjectQueue} from "@nestjs/bull";
+import {Queue} from "bull";
+import {AuthQueueName} from "../../share/constants/queueus";
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectModel(UserModel.name) private readonly userModel: Model<UserModel>,
-        @Inject(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
+        @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
+        @InjectQueue(AuthQueueName) private readonly authQueue:Queue,
         private readonly jwtService: JwtModuleService,
         private readonly eventEmitter: EventEmitter2,
-        private readonly emailService: EmailService,
+
     ) {
     }
 
@@ -65,27 +69,11 @@ export class AuthService {
     }
 
     async sendVerificationEmail(email: string) {
-        const token = generateUUID();
-        await this.redis.set(token, email , "EX" , 10000); // 10 minutes ttl
-        await this.emailService.sendEmail(
-            email,
-            'Verify your account.',
-            `
-            <a href="${process.env.CLIENT_URL}/auth/verify/${token}">Verify account</a>
-         `,
-        );
+        await this.authQueue.add('sendVerificationEmail' , {email} , {attempts:3,priority:3})
     }
 
     async loginEvent(email: string, ip: string) {
-        await this.userModel.updateOne(
-            {email},
-            {$set: {lastLogin: new Date()}},
-        );
-        await this.emailService.sendEmail(
-            email,
-            'Verify your account.',
-            `new device logged in your account with ip of ${ip}`,
-        );
+        await this.authQueue.add("loginEvent" , {email,ip})
     }
 
     async validateLoginActivity(user: UserDocument, ip: string) {
