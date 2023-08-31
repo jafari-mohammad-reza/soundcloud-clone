@@ -1,16 +1,10 @@
 import {Module} from '@nestjs/common';
-import {
-    ConfigModuleConf,
-    EventEmmiterConf,
-    JwtConf,
-    MongooseConf,
-    RedisModuleConf,
-    ThrottlerConf,
-    BullConf
-} from './share/conf';
+import {BullConf, ConfigModuleConf, EventEmmiterConf, JwtConf, MongooseConf, ThrottlerConf} from './share/conf';
 import {AuthModule} from './modules/auth/auth.module';
 import {RedisModule} from "@liaoliaots/nestjs-redis";
 import {ConfigModule, ConfigService} from "@nestjs/config";
+import {SearchModule} from "./modules/search/search.module";
+import {FetcherModule} from "./modules/fetcher/fetcher.module";
 
 @Module({
     imports: [
@@ -27,11 +21,13 @@ import {ConfigModule, ConfigService} from "@nestjs/config";
                     url: config.getOrThrow('REDIS_URL'),
                 },
                 readyLog: true,
-                closeClient:true,
+                closeClient: true,
             }),
         }),
         BullConf,
         AuthModule,
+        SearchModule,
+        FetcherModule
     ],
     controllers: [],
     providers: [],

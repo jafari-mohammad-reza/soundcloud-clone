@@ -1,6 +1,5 @@
 import {ConfigModule} from '@nestjs/config';
 import * as joi from 'joi';
-import {join} from 'path';
 
 export const ConfigModuleConf = ConfigModule.forRoot({
     isGlobal: true,

@@ -6,8 +6,8 @@ services:
       dockerfile: Dockerfile
       target: development
     volumes:
-      - .:/app
-      - ./node_modules:/app/node_modules
+      - .:/app/
+      - /app/node_modules
     ports:
       - "5000:5000"
       - "9229:9229"
@@ -17,7 +17,7 @@ services:
       - mongo
       - redis
     environment:
-      MONGODB_URL: mongodb://mongo
+      MONGODB_URL: mongodb://mongo:27017
       REDIS_URL: redis://redis:6379
       REDIS_HOST: redis
       REDIS_PORT: 6379

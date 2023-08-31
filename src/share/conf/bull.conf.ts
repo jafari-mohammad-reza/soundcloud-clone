@@ -1,6 +1,5 @@
 import {BullModule} from "@nestjs/bull";
 import {ConfigModule, ConfigService} from "@nestjs/config";
-import {AuthQueueName} from "../constants/queueus";
 
 export const BullConf = BullModule.forRootAsync({
     imports: [ConfigModule],

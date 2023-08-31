@@ -2,7 +2,6 @@ import {Process, Processor} from "@nestjs/bull";
 import {Job} from "bull";
 import {generateUUID} from "../../share/utils/crypto";
 import {EmailService} from "../../share/services/email.service";
-import {Inject} from "@nestjs/common";
 import {DEFAULT_REDIS_NAMESPACE, InjectRedis} from "@liaoliaots/nestjs-redis";
 import Redis from "ioredis";
 import {AuthQueueName} from "../../share/constants/queueus";
@@ -17,14 +16,15 @@ export class AuthQueue {
         private readonly emailService: EmailService,
         @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
         @InjectModel(UserModel.name) private readonly userModel: Model<UserModel>,
-        private readonly configService:ConfigService
+        private readonly configService: ConfigService
     ) {
     }
+
     @Process('sendVerificationEmail')
-    async sendVerificationEmail(job:Job<{email:string}>){
+    async sendVerificationEmail(job: Job<{ email: string }>) {
         const {email} = job.data
         const token = generateUUID();
-        await this.redis.set(token, email , "EX" , 10000); // 10 minutes ttl
+        await this.redis.set(token, email, "EX", 10000); // 10 minutes ttl
         await this.emailService.sendEmail(
             email,
             'Verify your account.',
@@ -33,9 +33,10 @@ export class AuthQueue {
          `,
         );
     }
+
     @Process("loginEvent")
-    async loginEvent(job :Job<{email:string , ip:string}>){
-        const {ip,email} = job.data
+    async loginEvent(job: Job<{ email: string, ip: string }>) {
+        const {ip, email} = job.data
         await this.userModel.updateOne(
             {email},
             {$set: {lastLogin: new Date()}},

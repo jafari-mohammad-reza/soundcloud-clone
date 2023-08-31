@@ -1,5 +1,5 @@
 import {Model} from 'mongoose';
-import {BadRequestException, ForbiddenException, Inject, Injectable,} from '@nestjs/common';
+import {BadRequestException, ForbiddenException, Injectable,} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {UserDocument, UserModel} from 'src/share/database';
 import {JwtModuleService} from 'src/share/services/jwt.service';
@@ -8,9 +8,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {InvalidCredentialsException} from 'src/share/http/exceptions/InvalidCredentials.exception';
 import {verifyPassword} from 'src/share/utils';
 import {UserAccountStatus} from 'src/share/database/schemas/user.schema';
-import {EmailService} from 'src/share/services/email.service';
-import {generateUUID} from '../../share/utils/crypto';
-import { DEFAULT_REDIS_NAMESPACE, InjectRedis } from '@liaoliaots/nestjs-redis';
+import {DEFAULT_REDIS_NAMESPACE, InjectRedis} from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 import {InjectQueue} from "@nestjs/bull";
 import {Queue} from "bull";
@@ -21,10 +19,9 @@ export class AuthService {
     constructor(
         @InjectModel(UserModel.name) private readonly userModel: Model<UserModel>,
         @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
-        @InjectQueue(AuthQueueName) private readonly authQueue:Queue,
+        @InjectQueue(AuthQueueName) private readonly authQueue: Queue,
         private readonly jwtService: JwtModuleService,
         private readonly eventEmitter: EventEmitter2,
-
     ) {
     }
 
@@ -69,11 +66,11 @@ export class AuthService {
     }
 
     async sendVerificationEmail(email: string) {
-        await this.authQueue.add('sendVerificationEmail' , {email} , {attempts:3,priority:3})
+        await this.authQueue.add('sendVerificationEmail', {email}, {attempts: 3, priority: 3})
     }
 
     async loginEvent(email: string, ip: string) {
-        await this.authQueue.add("loginEvent" , {email,ip})
+        await this.authQueue.add("loginEvent", {email, ip})
     }
 
     async validateLoginActivity(user: UserDocument, ip: string) {

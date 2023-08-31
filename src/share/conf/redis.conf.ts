@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import {RedisModule, RedisModuleOptions, RedisOptionsFactory} from '@liaoliaots/nestjs-redis';
+import {RedisModule} from '@liaoliaots/nestjs-redis';
 import {ConfigModule, ConfigService} from "@nestjs/config";
 
-export const RedisModuleConf =  RedisModule.forRootAsync({
+export const RedisModuleConf = RedisModule.forRootAsync({
     imports: [ConfigModule],
     inject: [ConfigService],
     useFactory: (config: ConfigService) => ({
@@ -10,7 +9,7 @@ export const RedisModuleConf =  RedisModule.forRootAsync({
             url: config.getOrThrow('REDIS_URL'),
         },
         readyLog: true,
-        closeClient:true,
+        closeClient: true,
     }),
 });
 

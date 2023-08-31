@@ -1,11 +1,9 @@
-FROM node:18-alpine  AS development
+FROM node:18-alpine AS development
 WORKDIR /app
 ENV NODE_ENV development
 RUN npm i -g pnpm
-COPY package*.json /app/
-COPY pnpm-lock.yaml /app/
-RUN pnpm install
 COPY . .
+RUN pnpm install
 EXPOSE 5000
 EXPOSE 9229
 CMD ["pnpm" , "run", "start:debug"]
@@ -23,7 +21,7 @@ EXPOSE 5000
 CMD [ "pnpm", "run", "start:prod"]
 
 
-FROM node:18-alpine
+FROM node:18-alpine as production
 ENV NODE_ENV production
 WORKDIR /app
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
