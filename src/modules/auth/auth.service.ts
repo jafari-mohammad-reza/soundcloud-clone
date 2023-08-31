@@ -1,4 +1,4 @@
-import {Model} from 'mongoose';
+import {Model, Types} from 'mongoose';
 import {BadRequestException, ForbiddenException, Injectable,} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {UserDocument, UserModel} from 'src/share/database';
@@ -13,6 +13,7 @@ import Redis from 'ioredis';
 import {InjectQueue} from "@nestjs/bull";
 import {Queue} from "bull";
 import {AuthQueueName} from "../../share/constants/queueus";
+import {LoginResult, RegisterResult} from "../../share/interfaces";
 
 @Injectable()
 export class AuthService {
@@ -25,21 +26,22 @@ export class AuthService {
     ) {
     }
 
-    async registerUser(registerDto: RegisterDto, ip: string) {
+    async registerUser(registerDto: RegisterDto, ip: string):Promise<RegisterResult> {
         const {email, username, password} = registerDto;
         if ((await this.isUserExist(email, username)).length > 0) {
             throw new InvalidCredentialsException();
         }
         this.eventEmitter.emit('user.register', {email});
-        return await this.userModel.create({
+        const createdUser =  await this.userModel.create({
             email,
             username,
             password,
             registerIp: ip.split('::ffff:')[1],
         });
+        return {email: createdUser.email}
     }
 
-    async loginUser(loginDto: LoginDto, ip: string) {
+    async loginUser(loginDto: LoginDto, ip: string): Promise<LoginResult> {
         const {email, password} = loginDto;
         const user = await this.userModel.findOne({email});
 
@@ -53,16 +55,18 @@ export class AuthService {
             throw new ForbiddenException();
         }
         this.eventEmitter.emit('user.login', {email, ip});
-        return await this.jwtService.signToken(user._id.toString());
+        const token = await this.jwtService.signToken(user._id.toString());
+        return {token}
     }
 
-    async activeUserAccount(token: string) {
+    async activeUserAccount(token: string) : Promise<Types.ObjectId> {
         const email = await this.redis.get(token);
         if (!email) throw new BadRequestException();
-        return await this.userModel.findOneAndUpdate(
+        const result =  await this.userModel.findOneAndUpdate(
             {email},
             {$set: {accountStatus: UserAccountStatus.Active}},
         );
+        return result._id
     }
 
     async sendVerificationEmail(email: string) {
@@ -73,15 +77,13 @@ export class AuthService {
         await this.authQueue.add("loginEvent", {email, ip})
     }
 
-    async validateLoginActivity(user: UserDocument, ip: string) {
-        return user.registerIp !== ip.split('::ffff:')[1] &&
-        user.lastLogin &&
-        new Date().getTime() - user.lastLogin.getTime() < 7 * 24 * 60 * 60 * 1000
-            ? false
-            : true;
+    async validateLoginActivity(user: UserDocument, ip: string): Promise<boolean> {
+        return !(user.registerIp !== ip.split('::ffff:')[1] &&
+            user.lastLogin &&
+            new Date().getTime() - user.lastLogin.getTime() < 7 * 24 * 60 * 60 * 1000);
     }
 
-    private async isUserExist(email?: string, username?: string) {
+    private async isUserExist(email?: string, username?: string) : Promise<UserDocument[]> {
         return this.userModel.find({$or: [{email}, {username}]});
     }
 }

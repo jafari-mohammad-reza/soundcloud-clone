@@ -1,9 +1,11 @@
 FROM node:18-alpine AS development
 WORKDIR /app
 ENV NODE_ENV development
+COPY package.json .
+COPY pnpm-lock.yaml .
 RUN npm i -g pnpm
-COPY . .
 RUN pnpm install
+COPY . .
 EXPOSE 5000
 EXPOSE 9229
 CMD ["pnpm" , "run", "start:debug"]

@@ -11,5 +11,5 @@ export function swaggerConf(app: INestApplication) {
         .addBearerAuth({type: 'http'})
         .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
+    SwaggerModule.setup('api-docs', app, document);
 }

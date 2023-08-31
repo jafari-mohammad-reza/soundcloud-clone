@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
       target: development
     volumes:
-      - .:/app/
+      - .:/app
       - /app/node_modules
     ports:
       - "5000:5000"
@@ -22,7 +22,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       NODE_ENV: development
-      PORT: 8080
+      PORT: 5000
   mongo:
     image: mongo
     ports:
