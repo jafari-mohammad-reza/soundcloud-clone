@@ -4,7 +4,10 @@ import {LoginDto, RegisterDto} from './auth.dto';
 import {OnEvent} from '@nestjs/event-emitter';
 import {AuthService} from './auth.service';
 
-@Controller('api/v1/auth')
+@Controller({
+    path:'auth',
+    version:'1'
+})
 @ApiTags('Auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {

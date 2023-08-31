@@ -14,6 +14,7 @@ import {InjectQueue} from "@nestjs/bull";
 import {Queue} from "bull";
 import {AuthQueueName} from "../../share/constants/queueus";
 import {LoginResult, RegisterResult} from "../../share/interfaces";
+import * as process from "process";
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,7 @@ export class AuthService {
             username,
             password,
             registerIp: ip.split('::ffff:')[1],
+            accountStatus: process.env.NODE_ENV === "development" ? UserAccountStatus.Active : UserAccountStatus.DeActive
         });
         return {email: createdUser.email}
     }

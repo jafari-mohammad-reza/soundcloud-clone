@@ -2,7 +2,8 @@ import {Injectable} from "@nestjs/common";
 import {DEFAULT_REDIS_NAMESPACE, InjectRedis} from "@liaoliaots/nestjs-redis";
 import Redis from "ioredis";
 import {HttpService} from "@nestjs/axios";
-import {SearchResultInterface} from "../../share/interfaces/search.interface";
+import {SearchResultInterface} from "../../share/interfaces";
+import {SearchDto} from "./search.dto";
 
 @Injectable()
 export class SearchService {
@@ -11,7 +12,7 @@ export class SearchService {
         private readonly httpService:HttpService
     ) {
     }
-    async searchKeyWord() : Promise<SearchResultInterface> {
+    async searchKeyWord({keyWord , limit}:SearchDto) : Promise<SearchResultInterface> {
         return null
     }
 }
