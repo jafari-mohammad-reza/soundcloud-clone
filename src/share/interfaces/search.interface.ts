@@ -1,7 +1,12 @@
+export enum YoutubeContentType {
+    Video,
+    Playlist
+}
 export interface SearchResultInterface {
     link :string;
     name: string;
     cover: string;
-    length: string;
-    artist: string;
+    duration?: string;
+    channel: string;
+    contentType : YoutubeContentType
 }
