@@ -3,8 +3,9 @@ import {BullConf, ConfigModuleConf, EventEmmiterConf, JwtConf, MongooseConf, Thr
 import {AuthModule} from './modules/auth/auth.module';
 import {RedisModule} from "@liaoliaots/nestjs-redis";
 import {ConfigModule, ConfigService} from "@nestjs/config";
-import {SearchModule} from "./modules/search/search.module";
 import {FetcherModule} from "./modules/fetcher/fetcher.module";
+import {StreamModule} from "./modules/stream/stream.module";
+import {DownloadModule} from "./modules/download/download.module";
 
 @Module({
     imports: [
@@ -26,8 +27,9 @@ import {FetcherModule} from "./modules/fetcher/fetcher.module";
         }),
         BullConf,
         AuthModule,
-        SearchModule,
-        FetcherModule
+        FetcherModule,
+        StreamModule,
+        DownloadModule
     ],
     controllers: [],
     providers: [],
