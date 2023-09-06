@@ -9,3 +9,9 @@ export enum  ContentUrlType {
     Video,
     PlayList
 }
+
+export enum SongQuality {
+    Low,
+    Medium,
+    High
+}
