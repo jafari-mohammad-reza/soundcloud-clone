@@ -6,8 +6,10 @@ import {SearchResultInterface} from "../../share/interfaces";
 import {FetcherDto} from "./fetcher.dto";
 import {ConfigService} from "@nestjs/config";
 import {AxiosResponse} from "axios";
-import {catchError, forkJoin, map, Observable, of, switchMap} from "rxjs";
+import {catchError, forkJoin, from, map, Observable, of, switchMap} from "rxjs";
 import {YoutubeContentType} from "../../share/interfaces/search.interface";
+import * as stream from "stream";
+import * as ytdl from "ytdl-core"
 
 @Injectable()
 export class FetcherService {
@@ -138,5 +140,14 @@ export class FetcherService {
                 throw new InternalServerErrorException('Error fetching video details', err);
             }),
         );
+    }
+    getVideoBytes(url :string) : Observable<{stream : stream.Readable , info : ytdl.videoInfo}> {
+        return from(ytdl.getInfo(url)).pipe(map(info => {
+            const stream =  ytdl.downloadFromInfo(info, {
+                filter: 'audioonly',
+                quality:"highestaudio",
+            });
+            return {stream , info}
+        }))
     }
 }

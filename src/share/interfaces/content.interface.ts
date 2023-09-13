@@ -11,7 +11,7 @@ export enum  ContentUrlType {
 }
 
 export enum SongQuality {
-    Low,
-    Medium,
-    High
+    Medium="Medium",
+    High="High",
+    Low="Low"
 }

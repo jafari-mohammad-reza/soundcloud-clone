@@ -14,10 +14,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const date = new Date();
         const errorDetail = `${date.toISOString()} - Request to: ${request.url} - Response status: ${status} - Error message: ${exception.message}\n`;
         const logFileName = `errors-${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.log`;
-
-        fs.appendFile(path.join(__dirname, './logs', logFileName), errorDetail, 'utf8', (err) => {
-            if (err) throw err;
-        });
+        const logDirPath =path.join(__dirname , '..' , '..' , '..' , '..', 'logs')
+        const logFilePath = path.join(logDirPath, logFileName)
+        if(fs.existsSync(logDirPath)){
+            fs.appendFile(logFilePath, errorDetail, 'utf8', (err) => {
+                if (err) throw err;
+            });
+        }else {
+            fs.mkdir(logDirPath , function () {
+                fs.appendFile(logFilePath, errorDetail, 'utf8', (err) => {
+                    if (err) throw err;
+                });
+            })
+        }
 
         response
             .status(status)
