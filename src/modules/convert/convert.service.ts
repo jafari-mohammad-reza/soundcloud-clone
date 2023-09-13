@@ -16,7 +16,7 @@ export class ConvertService {
                     .toFormat('flac')
                     .outputOptions('-metadata', `artist=${artistName}`)
                     .audioCodec('flac')
-                    .audioFrequency(48000) // or 44100 for CD quality
+                    .audioFrequency(96000) // or 44100 for CD quality
                     .audioQuality(0) // 0 means highest quality in FLAC
                     .audioChannels(2)
                     .save(filePath),

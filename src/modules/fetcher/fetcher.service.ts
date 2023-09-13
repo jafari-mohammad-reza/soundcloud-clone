@@ -1,4 +1,4 @@
-import {Injectable, InternalServerErrorException} from "@nestjs/common";
+import {BadRequestException, Injectable, InternalServerErrorException} from "@nestjs/common";
 import {DEFAULT_REDIS_NAMESPACE, InjectRedis} from "@liaoliaots/nestjs-redis";
 import Redis from "ioredis";
 import {HttpService} from "@nestjs/axios";
@@ -149,5 +149,55 @@ export class FetcherService {
             });
             return {stream , info}
         }))
+    }
+    getYoutubePlaylistInfo(
+        playlistId: string,
+    ): Observable<AxiosResponse> {
+        const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${this.configService.getOrThrow("YOUTUBE_API_KEY")}`;
+        return this.httpService.get(url).pipe(
+            map((response) => {
+                if (
+                    (
+                        (response.data as any)
+                            .items as any[]
+                    ).length > 50
+                ) {
+                    throw new BadRequestException('Playlist can have 50 videos at most.');
+                }
+                return response;
+            }),
+        );
+    }
+    getPlaylistItemsUrls(playlistId: string): Observable<string[]> {
+        //Use the getYoutubePlaylistInfo function to get the playlist information, and switchMap allows us to chain another observable
+        return this.getYoutubePlaylistInfo(playlistId).pipe(
+            switchMap((playlist) => {
+                const itemIds = playlist.data.items.map(
+                    (item: any) => item.snippet.resourceId.videoId,
+                );
+                //Transforms every video id into an observable for the cached video's url
+                const videoUrlObservables = itemIds.map((itemId: string) =>
+                    from(ytdl.getInfo(itemId)).pipe(
+                        map((value) => value.videoDetails.video_url),
+                        catchError((err) => {
+                            //Catch errors if any occur during transforming video ids to urls
+                            throw err
+                        }),
+                    ),
+                );
+                return forkJoin(videoUrlObservables).pipe(
+                    map((urls: string[]) => {
+                        return urls.filter((url: string) => url !== '');
+                    }),
+                    catchError((err) => {
+                        throw err
+                    }),
+                );
+            }),
+            catchError((err) => {
+                //Catches any errors occurring while obtaining playlist information using the getYoutubePlaylistInfo function
+                throw err
+            }),
+        );
     }
 }
