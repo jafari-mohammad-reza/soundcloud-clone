@@ -1,3 +1,3 @@
-import {UserDocument, UserModel, UserSchema} from './user.schema';
+import { UserDocument, UserModel, UserSchema } from "./user.schema";
 
-export {UserDocument, UserSchema, UserModel};
+export { UserDocument, UserSchema, UserModel };

@@ -8,6 +8,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - ./tmp:/app/tmp
     ports:
       - "5000:5000"
       - "9229:9229"

@@ -1,6 +1,6 @@
 export interface RegisterResult {
- email: string
+  email: string;
 }
 export interface LoginResult {
-    token: string
+  token: string;
 }

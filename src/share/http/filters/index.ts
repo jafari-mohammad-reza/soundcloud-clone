@@ -1,4 +1,2 @@
-import {HttpExceptionFilter} from "./http_exception.filter"
-export {
-    HttpExceptionFilter 
-}
+import { HttpExceptionFilter } from "./http_exception.filter";
+export { HttpExceptionFilter };

@@ -1,6 +1,5 @@
-import {MongooseModule} from '@nestjs/mongoose';
+import { MongooseModule } from "@nestjs/mongoose";
 
-export const MongooseConf = MongooseModule.forRoot(
-    process.env.MONGODB_URL,
-    {dbName: 'sound-cloud'},
-);
+export const MongooseConf = MongooseModule.forRoot(process.env.MONGODB_URL, {
+  dbName: "sound-cloud",
+});

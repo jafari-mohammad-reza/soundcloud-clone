@@ -1,6 +1,5 @@
-import {Process, Processor} from "@nestjs/bull";
-import {StreamQueueName} from "../../share/constants/queueus";
+import { Process, Processor } from "@nestjs/bull";
+import { StreamQueueName } from "../../share/constants/queueus";
 
 @Processor(StreamQueueName)
-export class StreamQueue {
-}
+export class StreamQueue {}

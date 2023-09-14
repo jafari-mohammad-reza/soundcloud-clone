@@ -1,7 +1,7 @@
-import {Module} from "@nestjs/common";
+import { Module } from "@nestjs/common";
 
 @Module({
-    imports : [],
-    providers:[],
+  imports: [],
+  providers: [],
 })
-export class ConvertModule{}
+export class ConvertModule {}
