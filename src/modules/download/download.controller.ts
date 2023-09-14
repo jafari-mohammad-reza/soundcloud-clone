@@ -62,7 +62,9 @@ export class DownloadController {
   private downloadAlbum(result : Observable<string> , response:Response) {
     return result.subscribe({
       next(path) {
-        response.download(path, "test", (err) => {
+        console.log(path)
+        console.log(path.split(".zip")[0].split("_")[0])
+        response.download(path, path.split(".zip")[0].split("_")[0], (err) => {
           if (err) {
             console.error(err);
           }

@@ -102,7 +102,7 @@ export class ConvertService {
             "..",
             "..",
             "tmp",
-            `${generateUUID()}.zip`
+            `${album_name}_${generateUUID()}.zip`
         );
         const output = createWriteStream(zipFilePath);
         const archive = archiver('zip', {zlib: {level: 9}});

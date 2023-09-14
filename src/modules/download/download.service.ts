@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { SongQuality } from "../../share/interfaces/content.interface";
 import {
-  catchError,
+  catchError, concatMap,
   delay,
   forkJoin,
   from,
@@ -29,9 +29,16 @@ export class DownloadService {
     url: string,
     quality: SongQuality
   ): Observable<Observable<DownloadedMusic>> | Observable<string> {
-    const path = url.split("https://www.youtube.com/")[1];
+    let path;
+    if (url.includes("www.")) {
+      path = url.split("https://www.youtube.com/")[1];
+    } else {
+      path = url.split("https://youtube.com/")[1];
+    }
+      console.log(path)
     // get the first part from the path before '?'
     const contentTypeKey = path.split("?")[0];
+      console.log(contentTypeKey)
     if (contentTypeKey.startsWith("playlist")) {
       return this.downloadPlaylist(url, quality);
     } else if (contentTypeKey.startsWith("watch")) {
@@ -73,17 +80,31 @@ export class DownloadService {
     );
   }
   private downloadPlaylist(url: string, quality: SongQuality): Observable<string> {
-    const id = url.split("https://www.youtube.com/playlist?list=")[1];
+      let id;
+      if (url.includes("www.")) {
+          id = url.split("https://www.youtube.com/playlist?list=")[1];
+      } else {
+          id = url.split("https://youtube.com/playlist?list=")[1];
+      }
     if (!id) {
-      throw new BadRequestException();
+      throw new BadRequestException('id not exist');
     }
     return this.fetcherService.getPlaylistItemsUrls(id).pipe(
-        mergeMap((urls) => from(urls)),
-        mergeMap((url) => this.downloadSong(url, quality)),
-        mergeAll(),
-        toArray(),
-        mergeMap((downloadedSongs: DownloadedMusic[]) =>
-            this.convertService.zipDownloadedContent(downloadedSongs, quality, generateUUID())
+        concatMap(({urls , title}) =>
+            from(urls).pipe(
+                mergeMap((url) => this.downloadSong(url, quality)),
+                toArray(),
+                mergeMap((downloadedSongsObservables: Observable<DownloadedMusic>[]) =>
+                    forkJoin(downloadedSongsObservables).pipe(
+                        mergeMap((downloadedSongs: DownloadedMusic[]) => {
+                            console.log(title)
+                            return this.convertService.zipDownloadedContent(downloadedSongs, quality, title)
+                            }
+
+                        )
+                    )
+                ),
+            )
         ),
         retryWhen(errors => errors.pipe(delay(1000)))
     );
