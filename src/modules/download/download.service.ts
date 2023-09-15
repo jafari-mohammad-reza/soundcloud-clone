@@ -92,7 +92,7 @@ export class DownloadService {
     return this.fetcherService.getPlaylistItemsUrls(id).pipe(
         concatMap(({urls , title}) =>
             from(urls).pipe(
-                mergeMap((url) => this.downloadSong(url, quality)),
+                mergeMap((url) => this.downloadSong(url, quality) , 10),
                 toArray(),
                 mergeMap((downloadedSongsObservables: Observable<DownloadedMusic>[]) =>
                     forkJoin(downloadedSongsObservables).pipe(

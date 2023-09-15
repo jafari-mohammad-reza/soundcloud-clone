@@ -105,7 +105,7 @@ export class ConvertService {
             `${album_name}_${generateUUID()}.zip`
         );
         const output = createWriteStream(zipFilePath);
-        const archive = archiver('zip', {zlib: {level: 9}});
+        const archive = archiver('zip', {zlib: {level: 6}});
         archive.pipe(output);
         this.appendDownloadedContentToZip(
             downloadedContent,
@@ -132,50 +132,48 @@ export class ConvertService {
     });
   }
 
-
-  async  appendDownloadedContentToZip(
-      downloadedContent:DownloadedMusic[],
-      archive: archiver.Archiver,
-      quality: SongQuality,
-      output: WriteStream,
-  ): Promise<void> {
+async appendDownloadedContentToZip(
+    downloadedContent:DownloadedMusic[],
+    archive: archiver.Archiver,
+    quality: SongQuality,
+    output: WriteStream,
+): Promise<void> {
     try {
-      await Promise.all(
-          downloadedContent.map((content) => {
+        const promises = downloadedContent.map((content) => {
             return new Promise((res, rej) => {
-              if(content.data instanceof WriteStream){
-                content.data.on(  'finish', () => {
-                  archive.append(createReadStream(content.filePath), {
-                    name: `${content.title}.mp4`,
-                  });
-                  res(null);
+                if(content.data instanceof WriteStream){
+                    content.data.on('finish', () => {
+                        archive.append(createReadStream(content.filePath), {
+                            name: `${content.title}.mp4`,
+                        });
+                        res(null);
+                    });
+                } else {
+                    const format = quality === SongQuality.High ? "flac" : "mp3"
+                    content.data.on('end', () => {
+                        archive.append(createReadStream(content.filePath), {
+                            name: `${content.title}.${format}`,
+                        });
+                        res(null);
+                    });
+                }
+                content.data.on('error', (error: any) => {
+                    rej(error);
                 });
-              }else{
-                const format = quality === SongQuality.High ? "flac" : "mp3"
-                content.data.on(  'end', () => {
-                  archive.append(createReadStream(content.filePath), {
-                    name: `${content.title}.${format}`,
-                  });
-                  res(null);
-                });
-              }
+            })
+            .then(() => unlink(content.filePath, (err: any) => {
+                if (err) throw new Error(err);
+            }));
+        });
 
-              content.data.on('error', (error: any) => {
-                rej(error);
-              });
-            });
-          }),
-      ).then(async () => {
-        downloadedContent.map((content) =>
-            unlink(content.filePath, (err: any) => {
-              if (err) throw new Error(err);
-            }),
-        );
+        for (const promise of promises) {
+            await promise;
+        }
+
         await archive.finalize();
         output.close();
-      });
     } catch (err: any) {
-      throw err
+        throw err
     }
-  }
+}
 }
