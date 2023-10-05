@@ -11,13 +11,18 @@ import { FetcherDto } from "./fetcher.dto";
 import { ConfigService } from "@nestjs/config";
 import { AxiosResponse } from "axios";
 import {
-    catchError, delay,
-    forkJoin,
-    from,
-    map, mergeMap,
-    Observable,
-    of, retryWhen,
-    switchMap, take, throwError,
+  catchError,
+  delay,
+  forkJoin,
+  from,
+  map,
+  mergeMap,
+  Observable,
+  of,
+  retryWhen,
+  switchMap,
+  take,
+  throwError,
 } from "rxjs";
 import { YoutubeContentType } from "../../share/interfaces/search.interface";
 import * as stream from "stream";
@@ -202,30 +207,35 @@ export class FetcherService {
     );
   }
 
-    getVideoBytes(url: string): Observable<{ stream: stream.Readable; info: ytdl.videoInfo }> {
-        return from(ytdl.getInfo(url)).pipe(
-            retryWhen(errors =>
-                errors.pipe(
-                    // start with 3000 ms delay, increase on each retry
-                    mergeMap((err, i) => {
-                        const delayTime = 3000 * 2 ** i;
-                        if (i > 2) {  // if maximum number of retries have been reached
-                            return throwError(`Could not fetch video info after multiple attempts: ${err}`);
-                        }
-                        console.log(`Attempt ${i + 1}: retrying in ${delayTime}ms`);
-                        return of(err).pipe(delay(delayTime));
-                    }),
-                ),
-            ),
-            map((info) => {
-                const stream = ytdl.downloadFromInfo(info, {
-                    filter: "audioonly",
-                    quality: "highestaudio",
-                });
-                return { stream, info };
-            })
-        );
-    }
+  getVideoBytes(
+    url: string
+  ): Observable<{ stream: stream.Readable; info: ytdl.videoInfo }> {
+    return from(ytdl.getInfo(url)).pipe(
+      retryWhen((errors) =>
+        errors.pipe(
+          // start with 3000 ms delay, increase on each retry
+          mergeMap((err, i) => {
+            const delayTime = 3000 * 2 ** i;
+            if (i > 2) {
+              // if maximum number of retries have been reached
+              return throwError(
+                `Could not fetch video info after multiple attempts: ${err}`
+              );
+            }
+            console.log(`Attempt ${i + 1}: retrying in ${delayTime}ms`);
+            return of(err).pipe(delay(delayTime));
+          })
+        )
+      ),
+      map((info) => {
+        const stream = ytdl.downloadFromInfo(info, {
+          filter: "audioonly",
+          quality: "highestaudio",
+        });
+        return { stream, info };
+      })
+    );
+  }
   getYoutubePlaylistInfo(playlistId: string): Observable<AxiosResponse> {
     const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${this.configService.getOrThrow(
       "YOUTUBE_API_KEY"
@@ -239,34 +249,36 @@ export class FetcherService {
       })
     );
   }
-    getPlaylistItemsUrls(playlistId: string): Observable<{ title: string; urls: string[] }> {
-        return this.getYoutubePlaylistInfo(playlistId).pipe(
-            switchMap((playlist) => {
-                // Extract the title from the playlist data
-                const title = playlist.data.items[0]?.snippet.title;
-                const itemIds = playlist.data.items.map(
-                    (item: any) => item.snippet.resourceId.videoId
-                );
-                const videoUrlObservables = itemIds.map((itemId: string) =>
-                    from(ytdl.getInfo(itemId)).pipe(
-                        map((value) => value.videoDetails.video_url),
-                        catchError((err) => {
-                            throw err;
-                        })
-                    )
-                );
-                return forkJoin(videoUrlObservables).pipe(
-                    map((urls: string[]) => {
-                        return { title, urls: urls.filter((url: string) => url !== "") };
-                    }),
-                    catchError((err) => {
-                        throw err;
-                    })
-                );
-            }),
-            catchError((err) => {
-                throw err;
-            })
+  getPlaylistItemsUrls(
+    playlistId: string
+  ): Observable<{ title: string; urls: string[] }> {
+    return this.getYoutubePlaylistInfo(playlistId).pipe(
+      switchMap((playlist) => {
+        // Extract the title from the playlist data
+        const title = playlist.data.items[0]?.snippet.title;
+        const itemIds = playlist.data.items.map(
+          (item: any) => item.snippet.resourceId.videoId
         );
-    }
+        const videoUrlObservables = itemIds.map((itemId: string) =>
+          from(ytdl.getInfo(itemId)).pipe(
+            map((value) => value.videoDetails.video_url),
+            catchError((err) => {
+              throw err;
+            })
+          )
+        );
+        return forkJoin(videoUrlObservables).pipe(
+          map((urls: string[]) => {
+            return { title, urls: urls.filter((url: string) => url !== "") };
+          }),
+          catchError((err) => {
+            throw err;
+          })
+        );
+      }),
+      catchError((err) => {
+        throw err;
+      })
+    );
+  }
 }
